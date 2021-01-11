@@ -18,10 +18,12 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { EmailerModule } from './mailer/emailer.module';
 
+
 const logger: LoggerConfig = new LoggerConfig();
 
 @Module({
   imports: [
+    
     WinstonModule.forRoot(logger.console()),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
