@@ -56,8 +56,6 @@ const logger: LoggerConfig = new LoggerConfig();
         DATABASE_PORT: Joi.number().default(5432),
       }),
       load: [appConfig],
-      envFilePath: '.env',
-      isGlobal: true,
     }),
     AuthModule,
     UsersModule,
