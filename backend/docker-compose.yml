@@ -1,0 +1,30 @@
+version: "3"
+
+services: 
+  db: 
+    container_name: auth_db
+    image: postgres
+    restart: always
+    ports: 
+      - "5432:5432"
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  test-db: 
+    container_name: test_auth_db
+    image: postgres
+    restart: always
+    ports: 
+      - "5433:5432"
+    environment: 
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data/
+volumes:
+  postgres_data:
+  test_postgres_data:
+
+
