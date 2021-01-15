@@ -1,9 +1,10 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png" />
   <HelloWorld msg="Hello Vue 3.0 + Vit2e" />
-  <SimpleForm :action='(data) => $api.authService.login(data)'>
+  <SimpleForm :action='(data) => $api.authService.register(data)'>
 
     <template v-slot:fields='props'>
+      <input  type="email" v-model='props.fields.email'>
       <input  type="username" v-model='props.fields.username'>
       <input  type="password" v-model='props.fields.password'>
     </template>
@@ -19,6 +20,6 @@ export default {
   components: {
     HelloWorld,
     SimpleForm
-  }
+  },
 }
 </script>
