@@ -6,8 +6,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import appConfig from './config/app.config';
 import { UsersModule } from './users/users.module';
@@ -17,13 +15,22 @@ import { RolesModule } from './roles/roles.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { EmailerModule } from './mailer/emailer.module';
-
-
+import { ProductController } from './product/product.controller';
+import { ProductModule } from './product/product.module';
+import { FileModule } from './file/file.module';
+import { AzureStorageModule } from '@nestjs/azure-storage';
+import { VerifiedGuard } from './common/guards/verified.guard';
+import { CartService } from './cart/cart.service';
+import { CartController } from './cart/cart.controller';
+import { CartModule } from './cart/cart.module';
 const logger: LoggerConfig = new LoggerConfig();
-
 @Module({
   imports: [
-    
+    AzureStorageModule.withConfig({
+      sasKey: process.env['AZURE_STORAGE_SAS_KEY'],
+      accountName: process.env['AZURE_STORAGE_ACCOUNT'],
+      containerName: 'basic',
+    }),
     WinstonModule.forRoot(logger.console()),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
@@ -34,7 +41,7 @@ const logger: LoggerConfig = new LoggerConfig();
         password: process.env.DATABASE_PASSWORD,
         database: process.env.DATABASE_NAME,
         autoLoadEntities: true,
-        synchronize: process.env.NODE_ENV === 'development',
+        synchronize: false,
       }),
     }),
     MailerModule.forRoot({
@@ -56,14 +63,18 @@ const logger: LoggerConfig = new LoggerConfig();
         DATABASE_PORT: Joi.number().default(5432),
       }),
       load: [appConfig],
+      envFilePath: '.env',
+      isGlobal: true,
     }),
     AuthModule,
     UsersModule,
     RolesModule,
     EmailerModule,
-    // DatabaseModule,
+    ProductModule,
+    FileModule,
+    CartModule,
   ],
-  controllers: [AppController],
+  controllers: [ProductController, CartController],
   providers: [
     {
       provide: APP_GUARD,
@@ -73,7 +84,12 @@ const logger: LoggerConfig = new LoggerConfig();
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
-    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: VerifiedGuard,
+    },
+    CartService,
   ],
+  exports: [AzureStorageModule],
 })
 export class AppModule {}

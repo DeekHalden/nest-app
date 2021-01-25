@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../users/intities/user.entity';
-import { Role } from './entities/role.entity';
+import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
+import { Role, UserRole } from './entities/role.entity';
 import { RolesService } from './roles.service';
 
 @Module({
@@ -9,4 +10,8 @@ import { RolesService } from './roles.service';
   providers: [RolesService],
   exports: [RolesService],
 })
-export class RolesModule {}
+export class RolesModule {
+  constructor(
+    @InjectRepository(Role) private userRoleRepository: Repository<Role>,
+  ) {}
+}

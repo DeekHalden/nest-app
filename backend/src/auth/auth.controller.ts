@@ -62,12 +62,9 @@ export class AuthController {
     return res.redirect('/auth/user');
   }
 
-  @Get('restore/:hash')
-  public async reset(@Param() params): Promise<Status> {
-    console.log(params.hash);
-    return {
-      status: 'reset',
-    };
+  @Post('reset/')
+  public async reset(@Body() data): Promise<Status> {
+    return await this.authService.resetConfirm(data);
   }
 
   @Post('restore')

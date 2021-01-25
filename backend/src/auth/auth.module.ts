@@ -7,8 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { EmailerModule } from '../mailer/emailer.module';
-import { Verify } from '../users/intities/verify.entity';
-import { ResetPassword } from '../users/intities/reset-password.entity';
+import { Verify } from '../users/entities/verify.entity';
+import { ResetPassword } from '../users/entities/reset-password.entity';
 
 @Module({
   imports: [

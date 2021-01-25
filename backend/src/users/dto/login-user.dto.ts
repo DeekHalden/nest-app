@@ -1,15 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 import { Role } from 'src/roles/entities/role.entity';
 
 export class LoginUserDto {
-  @ApiProperty({ description: 'User name' })
+  @ApiProperty({ description: 'User email' })
   @IsNotEmpty()
-  readonly username: string;
+  @IsEmail()
+  readonly email: string;
 
   @ApiProperty({ description: 'User password' })
   @IsNotEmpty()
   readonly password: string;
 
-  readonly roles: Role[];
+  readonly roles?: Role[];
 }

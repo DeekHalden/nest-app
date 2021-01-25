@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'src/roles/entities/role.entity';
 import { UsersService } from 'src/users/users.service';
+import { ROLE_CONSTANT } from '../decorators/role.decorator';
 
 const matchRoles = (roles, userRoles): boolean =>
   userRoles.some((r: Role) => roles.find((role) => role === r.title));
@@ -14,12 +15,14 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const roles = this.reflector.get<string[]>('roles', context.getHandler());
+    const roles = this.reflector.get<string[]>(
+      ROLE_CONSTANT,
+      context.getHandler(),
+    );
     if (!roles) {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    console.log(user);
     return matchRoles(roles, user.roles);
   }
 }

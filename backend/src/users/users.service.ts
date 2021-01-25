@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role, UserRole } from '../roles/entities/role.entity';
-import { toUserDto } from 'src/shared/mapper';
+import { toUserDto } from '../shared/mapper';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UserDto } from './dto/user.dto';
-import { User } from './intities/user.entity';
+import { comparePasswords, User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -22,16 +22,14 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserDto> {
-    const { username, password, email } = createUserDto;
+    const { password, email } = createUserDto;
     const userInDb = await this.userRepository.findOne({
-      where: { email, username },
+      where: { email },
     });
     if (userInDb) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
-
     const user: User = await this.userRepository.create({
-      username,
       password,
       email,
       roles: await this.preloadRole(),
@@ -40,7 +38,9 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  private async preloadRole(titles: string[] = ['admin']): Promise<Role[]> {
+  private async preloadRole(
+    titles: string[] = [UserRole.ADMIN],
+  ): Promise<Role[]> {
     const role = await Promise.all(
       titles.map(async (title) => {
         return await this.userRoleRepository.findOne({
@@ -52,17 +52,17 @@ export class UsersService {
   }
 
   async findByLogin(
-    { username, password }: LoginUserDto,
+    { email, password }: LoginUserDto,
     relations?: string[],
   ): Promise<UserDto> {
     const user = await this.userRepository.findOne({
-      where: { username },
-      relations,
+      where: { email },
+      // relations,
     });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
-    const areEqual = await User.comparePasswords(password, user.password);
+    const areEqual = await comparePasswords(password, user.password);
 
     if (!areEqual) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);

@@ -1,0 +1,5 @@
+entity: User
+items:
+  unit_1: 
+    email: 'deekhalden@gmail.com'
+    password: '1988dik1'

@@ -1,0 +1,6 @@
+entity: Product
+items: 
+  unit{1..10}: 
+    title: '{{commerce.product}}'
+    price: '{{random.float}}'
+    image: '{{image.imageUrl}}'
