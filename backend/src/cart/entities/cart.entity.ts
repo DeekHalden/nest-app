@@ -1,10 +1,16 @@
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CartItem } from './cart-item.entity';
 
@@ -23,17 +29,22 @@ export class Cart {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    name: 'status',
-    type: 'enum',
-    enum: CartItemStatus,
-    default: CartItemStatus.ORDERED,
+  @OneToOne(() => User, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
-  status: CartItemStatus;
-
-  @ManyToOne(() => User, (user) => user.id)
+  @JoinColumn()
   user: User;
 
-  @OneToMany(() => CartItem, (product) => product.cart, { cascade: true })
+  @OneToMany(() => CartItem, (cartItem) => cartItem.cartId, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
   items: CartItem[];
+
+  @CreateDateColumn()
+  createdAt: string;
+
+  @UpdateDateColumn()
+  updatedAt: string;
 }

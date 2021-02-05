@@ -15,14 +15,16 @@ import { RolesModule } from './roles/roles.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { EmailerModule } from './mailer/emailer.module';
-import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
 import { FileModule } from './file/file.module';
 import { AzureStorageModule } from '@nestjs/azure-storage';
-import { VerifiedGuard } from './common/guards/verified.guard';
-import { CartService } from './cart/cart.service';
-import { CartController } from './cart/cart.controller';
 import { CartModule } from './cart/cart.module';
+import { AppController } from './app.controller';
+import {
+  NestCookieSessionOptions,
+  CookieSessionModule,
+} from 'nestjs-cookie-session';
+
 const logger: LoggerConfig = new LoggerConfig();
 @Module({
   imports: [
@@ -31,18 +33,20 @@ const logger: LoggerConfig = new LoggerConfig();
       accountName: process.env['AZURE_STORAGE_ACCOUNT'],
       containerName: 'basic',
     }),
+    CookieSessionModule.forRoot({
+      session: { secret: process.env.SESSION_SECRET },
+    }),
     WinstonModule.forRoot(logger.console()),
-    TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'postgres',
-        host: process.env.DATABASE_HOST,
-        port: parseInt(process.env.DATABASE_PORT, 10),
-        username: process.env.DATABASE_USER,
-        password: process.env.DATABASE_PASSWORD,
-        database: process.env.DATABASE_NAME,
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
+    TypeOrmModule.forRoot({
+      name: 'default',
+      type: 'postgres',
+      host: process.env.DATABASE_HOST,
+      port: parseInt(process.env.DATABASE_PORT, 10),
+      username: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      autoLoadEntities: true,
+      synchronize: false,
     }),
     MailerModule.forRoot({
       transport: process.env.MAILER_CONFIG,
@@ -64,7 +68,8 @@ const logger: LoggerConfig = new LoggerConfig();
       }),
       load: [appConfig],
       envFilePath: '.env',
-      isGlobal: true,
+      isGlobal:
+       true,
     }),
     AuthModule,
     UsersModule,
@@ -74,7 +79,7 @@ const logger: LoggerConfig = new LoggerConfig();
     FileModule,
     CartModule,
   ],
-  controllers: [ProductController, CartController],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
@@ -84,11 +89,6 @@ const logger: LoggerConfig = new LoggerConfig();
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
-    {
-      provide: APP_GUARD,
-      useClass: VerifiedGuard,
-    },
-    CartService,
   ],
   exports: [AzureStorageModule],
 })

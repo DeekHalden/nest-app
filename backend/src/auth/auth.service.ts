@@ -76,12 +76,14 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto): Promise<any> {
+    console.log(loginUserDto);
     const user = await this.usersService.findByLogin(loginUserDto, ['roles']);
+    console.log(user);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-
     const token = this._generateToken(user);
+
     const redirect = getUserRedirect(user);
     return {
       email: user.email,

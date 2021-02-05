@@ -1,0 +1,61 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { CartService } from './cart.service';
+import { MockRepository } from '../shared/mock-repository';
+import { Connection } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Cart } from './entities/cart.entity';
+import { CartItem } from './entities/cart-item.entity';
+import { Product } from '../product/entities/product.entity';
+import { UsersService } from '../users/users.service';
+
+const createMockRepository = <T = any>(): MockRepository<T> => ({
+  create: jest.fn(),
+});
+
+describe('CartService', () => {
+  let service: CartService;
+  let usersService: UsersService;
+  let cartRepository: MockRepository;
+  let cartItemRepository: MockRepository;
+  let productRepository: MockRepository;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CartService,
+        {
+          provide: Connection,
+          useValue: {},
+        },
+        {
+          provide: getRepositoryToken(Cart),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(CartItem),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: createMockRepository(),
+        },
+      ],
+    }).compile();
+
+    service = module.get<CartService>(CartService);
+    cartRepository = module.get<MockRepository>(getRepositoryToken(Cart));
+    cartItemRepository = module.get<MockRepository>(
+      getRepositoryToken(CartItem),
+    );
+    productRepository = module.get<MockRepository>(getRepositoryToken(Product));
+    usersService = module.get<UsersService>(UsersService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+    expect(usersService).toBeDefined();
+    expect(cartRepository).toBeDefined();
+    expect(cartItemRepository).toBeDefined();
+    expect(productRepository).toBeDefined();
+  });
+});

@@ -9,8 +9,8 @@ import {
   Param,
   Post,
   Req,
-  Request,
   Response,
+  Session,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { LoginUserDto } from '../users/dto/login-user.dto';
@@ -20,8 +20,8 @@ import { LoginStatus } from './interfaces/login-status.interface';
 import { JwtPayload } from './interfaces/payload.interface';
 import { RegistrationStatus } from './interfaces/registration-status.interface';
 import { Status } from './interfaces/verify-status.interface';
-import { Public } from 'src/common/decorators/public.decorator';
-import { ResetPasswordDto } from 'src/users/dto/reset-password.dto';
+import { Public } from '../common/decorators/public.decorator';
+import { ResetPasswordDto } from '../users/dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +30,7 @@ export class AuthController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
+  @Public()
   @Post('register')
   public async register(
     @Body() createUserDto: CreateUserDto,
@@ -50,8 +51,13 @@ export class AuthController {
     return result;
   }
 
+  @Public()
   @Post('login')
-  public async login(@Body() loginUserDto: LoginUserDto): Promise<LoginStatus> {
+  public async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Session() session: Record<string, any>,
+  ): Promise<LoginStatus> {
+    console.log(session);
     return await this.authService.login(loginUserDto);
   }
 
@@ -62,11 +68,13 @@ export class AuthController {
     return res.redirect('/auth/user');
   }
 
+  @Public()
   @Post('reset/')
   public async reset(@Body() data): Promise<Status> {
     return await this.authService.resetConfirm(data);
   }
 
+  @Public()
   @Post('restore')
   public async restore(@Body() payload: ResetPasswordDto): Promise<any> {
     return await this.authService.resetPassword(payload);

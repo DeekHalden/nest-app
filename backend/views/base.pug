@@ -6,9 +6,8 @@ html(lang="en")
     title Document
     link(rel="stylesheet", href="_assets/style.css")
     link(rel="shortcut icon", href="_assets/favicon.ico", type="image/x-icon")
-
+    meta(name='csrf-token' content!=token)
   body
-    p #{NODE_ENV}
     #app
     block body
     script(type="module" src="_assets/index.js")

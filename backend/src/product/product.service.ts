@@ -2,7 +2,13 @@ import {
   AzureStorageService,
   UploadedFileMetadata,
 } from '@nestjs/azure-storage';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileService } from '../file/file.service';
 import { Connection, Repository, UpdateResult } from 'typeorm';
@@ -11,11 +17,13 @@ import { ProductDto } from './dto/product.dto';
 import { Product } from './entities/product.entity';
 import { Event } from '../events/entities/event.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 @Injectable()
 export class ProductService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @InjectRepository(Product) private productRepository: Repository<Product>,
-    private readonly azureStorage: AzureStorageService,
+    private readonly fileStorage: AzureStorageService,
     private readonly fileService: FileService,
     private readonly connection: Connection,
   ) {}
@@ -51,7 +59,7 @@ export class ProductService {
         },
       );
       const imagesUrls: string[] = await Promise.all(
-        imagesProxy.map(async (image) => await this.azureStorage.upload(image)),
+        imagesProxy.map(async (image) => await this.fileStorage.upload(image)),
       );
 
       const [imageId, ...imagesIds] = await Promise.all(
@@ -83,7 +91,11 @@ export class ProductService {
 
       await queryRunner.commitTransaction();
     } catch (error) {
-      console.log(error);
+      this.logger.log({
+        message: error,
+        level: 'error',
+        label: 'product',
+      });
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();

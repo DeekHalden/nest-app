@@ -16,6 +16,9 @@ export class ApiService {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "XSRF-Token": document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content"),
       },
     });
   }

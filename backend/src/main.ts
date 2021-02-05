@@ -1,18 +1,37 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ApiOAuth2, DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as cookieParser from 'cookie-parser';
+import * as csurf from 'csurf';
+import * as helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('pug');
+  app.use(cookieParser());
+  app.use(csurf({ cookie: true }));
+  app.use(helmet.hidePoweredBy());
+  // app.use(
+  //   session({
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     store: new TypeormStore({
+  //       cleanupLimit: 2,
+  //       ttl: 86400,
+  //     }).connect(await getConnection().getRepository(Session)),
+  //     secret: process.env.SESSION_SECRET,
+  //   }),
+  // );
+
   const options = new DocumentBuilder()
-    .setTitle('iluvcoffee')
+    .setTitle('simpleshop')
     .setDescription('Coffee application')
     .setVersion('1.0')
     .build();
@@ -32,6 +51,14 @@ async function bootstrap() {
     }),
   );
   app.enableCors();
+
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    next();
+  });
+
   await app.listen(3000);
 }
 bootstrap();

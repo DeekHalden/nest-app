@@ -1,9 +1,11 @@
-import { Product } from 'src/product/entities/product.entity';
+import { Product } from '../../product/entities/product.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Cart } from './cart.entity';
@@ -13,11 +15,19 @@ export class CartItem {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Cart, (cart) => cart.user)
-  cart: Cart;
+  @ManyToOne(() => Cart, (cart) => cart.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'cartId' })
+  cartId: Cart;
 
-  @OneToOne(() => Product, (product) => product.title)
-  product: Product;
+  @ManyToOne(() => Product, (prod) => prod.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'productId' })
+  productId: Product;
 
   @Column()
   quantity: number;

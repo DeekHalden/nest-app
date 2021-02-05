@@ -5,7 +5,6 @@ import {
 } from '@nestjs/azure-storage';
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -20,9 +19,10 @@ import {
   FileInterceptor,
   FilesInterceptor,
 } from '@nestjs/platform-express';
-import { RoleDecorator } from 'src/common/decorators/role.decorator';
-import { FileService } from 'src/file/file.service';
-import { UserRole } from 'src/roles/entities/role.entity';
+import { RoleDecorator } from '../common/decorators/role.decorator';
+import { UserDecorator } from '../common/decorators/user.decorator';
+import { FileService } from '../file/file.service';
+import { UserRole } from '../roles/entities/role.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductDto } from './dto/product.dto';
 import { ProductService } from './product.service';
@@ -44,6 +44,7 @@ export class ProductController {
   async create(
     @UploadedFiles() { images, image }: IUploadedFiles,
     @Body() body,
+    @UserDecorator() user,
   ): Promise<any> {
     return await this.productService.create(body, image[0], images);
   }
