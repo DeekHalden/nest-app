@@ -8,6 +8,7 @@ import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
 import * as csurf from 'csurf';
 import * as helmet from 'helmet';
+import { CookieMiddleware } from './common/cookie.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -16,20 +17,18 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('pug');
   app.use(cookieParser());
-  app.use(csurf({ cookie: true }));
+  app.use(
+    csurf({
+      cookie: true /* {
+        key: '_csrf-my-app',
+        path: '/token',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3600, // 1-hour
+      } */,
+    }),
+  );
   app.use(helmet.hidePoweredBy());
-  // app.use(
-  //   session({
-  //     resave: false,
-  //     saveUninitialized: false,
-  //     store: new TypeormStore({
-  //       cleanupLimit: 2,
-  //       ttl: 86400,
-  //     }).connect(await getConnection().getRepository(Session)),
-  //     secret: process.env.SESSION_SECRET,
-  //   }),
-  // );
-
   const options = new DocumentBuilder()
     .setTitle('simpleshop')
     .setDescription('Coffee application')

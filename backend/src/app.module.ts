@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
@@ -24,15 +24,16 @@ import {
   NestCookieSessionOptions,
   CookieSessionModule,
 } from 'nestjs-cookie-session';
+import { CookieMiddleware } from './common/cookie.middleware';
 
 const logger: LoggerConfig = new LoggerConfig();
 @Module({
   imports: [
-    AzureStorageModule.withConfig({
-      sasKey: process.env['AZURE_STORAGE_SAS_KEY'],
-      accountName: process.env['AZURE_STORAGE_ACCOUNT'],
-      containerName: 'basic',
-    }),
+    // AzureStorageModule.withConfig({
+    //   sasKey: process.env['AZURE_STORAGE_SAS_KEY'],
+    //   accountName: process.env['AZURE_STORAGE_ACCOUNT'],
+    //   containerName: 'basic',
+    // }),
     CookieSessionModule.forRoot({
       session: { secret: process.env.SESSION_SECRET },
     }),
@@ -68,8 +69,7 @@ const logger: LoggerConfig = new LoggerConfig();
       }),
       load: [appConfig],
       envFilePath: '.env',
-      isGlobal:
-       true,
+      isGlobal: true,
     }),
     AuthModule,
     UsersModule,
@@ -90,6 +90,10 @@ const logger: LoggerConfig = new LoggerConfig();
       useClass: RolesGuard,
     },
   ],
-  exports: [AzureStorageModule],
+  // exports: [AzureStorageModule],
 })
-export class AppModule {}
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(CookieMiddleware).forRoutes('*');
+  // }
+}

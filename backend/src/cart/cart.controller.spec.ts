@@ -48,10 +48,7 @@ describe('CartController', () => {
         },
       ],
     }).compile();
-
     controller = module.get<CartController>(CartController);
-    cartService = module.get<CartService>(CartService);
-    usersService = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
@@ -60,26 +57,17 @@ describe('CartController', () => {
   describe('create', () => {
     it('if user is authenticated should add products to cart', () => {});
     it('otherwise it should add products to session storage', async () => {
-      const response = {
-        headers: {
-          post: jest.fn(() => ''), // do what ever `get` should to )
-        },
-      };
-
       const cartItem: CreateCartDto = {
         product: { productId: 1, quantity: 1 },
       };
 
-      // const user = {
-      //   email: 'test@gmail.com',
-      //   id: 1,
-      // };
+      const itemsInSessionStorage = [cartItem]
 
       const req = {
-        session: { cart: undefined },
+        session: { cart: itemsInSessionStorage },
       };
       await controller.create(cartItem, undefined, req);
-      expect(req.session.cart).toContain(cartItem);
+      expect(req.session.cart.length).toBe(2);
     });
   });
 });
