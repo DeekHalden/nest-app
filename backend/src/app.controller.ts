@@ -4,9 +4,9 @@ import { Public } from './common/decorators/public.decorator';
 
 @Controller()
 export class AppController {
-  @Get('/')
+  @Get('/token')
   @Public()
   getHello(@Request() req, @Response() res: Res): any {
-    return res.send(/* { token: req.csrfToken() } */);
+    return res.send({ token: req.csrfToken() });
   }
 }

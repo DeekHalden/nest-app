@@ -12,6 +12,8 @@ import { FileDto } from './dto/file.dto';
 
 import { File } from './entities/file.entity';
 
+import * as fs from 'fs/promises';
+
 const {
   BlobServiceClient,
   ContainerClient,
@@ -21,6 +23,8 @@ const {
 
 const AZURE_STORAGE_CONNECTION_STRING =
   process.env['AZURE_STORAGE_CONNECTION_STRING'];
+
+export const unlink = async (url: string): Promise<any> => await fs.unlink(url);
 
 @Injectable()
 export class FileService {
@@ -36,7 +40,25 @@ export class FileService {
     return file;
   }
 
-  async remove(id: number): Promise<any> {
+  async removeById(id: number): Promise<any> {
+    const file = await this.fileRepository.findOne({ id });
+    if (!file) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+    await this.fileRepository.delete(file.id);
+    await unlink(file.url);
+  }
+
+  async remove({ url }: CreateFileDto): Promise<any> {
+    const file = await this.fileRepository.findOne({ url });
+    console.log(file);
+    if (!file) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+    await this.fileRepository.delete(file.id);
+    await unlink(file.url);
+  }
+  async removeFromAzure(id: number): Promise<any> {
     const file = await this.fileRepository.findOne({ id });
 
     if (!file) {

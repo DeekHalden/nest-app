@@ -1,14 +1,13 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ApiOAuth2, DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
 import * as csurf from 'csurf';
 import * as helmet from 'helmet';
-import { CookieMiddleware } from './common/cookie.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -19,13 +18,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(
     csurf({
-      cookie: true /* {
-        key: '_csrf-my-app',
-        path: '/token',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 3600, // 1-hour
-      } */,
+      cookie: true,
     }),
   );
   app.use(helmet.hidePoweredBy());

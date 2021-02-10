@@ -18,6 +18,7 @@ import { Product } from './entities/product.entity';
 import { Event } from '../events/entities/event.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { CreateFileDto } from 'src/file/dto/create-file.dto';
 @Injectable()
 export class ProductService {
   constructor(
@@ -30,8 +31,8 @@ export class ProductService {
 
   async create(
     createProductDto: CreateProductDto,
-    image: UploadedFileMetadata,
-    images: UploadedFileMetadata[],
+    image,
+    images,
   ): Promise<any> {
     const unitInDb = await this.productRepository.findOne({
       where: { title: createProductDto.title },
@@ -47,28 +48,42 @@ export class ProductService {
     await queryRunner.startTransaction();
 
     let product;
+    const imagesProxy: CreateFileDto[] = [image, ...images].map(
+      ({ filename, path }) => ({
+        url: path,
+        name: filename,
+      }),
+    );
     try {
       product = await this.productRepository.create(createProductDto);
-      const imagesProxy: UploadedFileMetadata[] = [image, ...images].map(
-        (image: UploadedFileMetadata) => {
-          image = {
-            ...image,
-            originalname: `${uuidv4()}_${image.originalname}`,
-          };
-          return image;
-        },
-      );
-      const imagesUrls: string[] = await Promise.all(
-        imagesProxy.map(async (image) => await this.fileStorage.upload(image)),
-      );
+      // Uploading images to azure blob storage
+      // const imagesProxy: UploadedFileMetadata[] = [image, ...images].map(
+      //   (image: UploadedFileMetadata) => {
+      //     image = {
+      //       ...image,
+      //       originalname: `${uuidv4()}_${image.originalname}`,
+      //     };
+      //     return image;
+      //   },
+      // );
+      // const imagesUrls: string[] = await Promise.all(
+      //   imagesProxy.map(async (image) => await this.fileStorage.upload(image)),
+      // );
+
+      // const [imageId, ...imagesIds] = await Promise.all(
+      //   imagesUrls.map(
+      //     async (url: string, index: number) =>
+      //       await this.fileService.create({
+      //         url,
+      //         name: imagesProxy[index].originalname,
+      //       }),
+      //   ),
+      // );
+      // Uploading images to azure blob storage
 
       const [imageId, ...imagesIds] = await Promise.all(
-        imagesUrls.map(
-          async (url: string, index: number) =>
-            await this.fileService.create({
-              url,
-              name: imagesProxy[index].originalname,
-            }),
+        imagesProxy.map(
+          async (file: CreateFileDto) => await this.fileService.create(file),
         ),
       );
       product.image = imageId.id;
@@ -97,6 +112,7 @@ export class ProductService {
         label: 'product',
       });
       await queryRunner.rollbackTransaction();
+      await Promise.all(imagesProxy.map(this.fileService.remove));
     } finally {
       await queryRunner.release();
     }
@@ -132,7 +148,7 @@ export class ProductService {
     ];
 
     await Promise.all(
-      imagesId.map(async (id) => await this.fileService.remove(id)),
+      imagesId.map(async (id) => await this.fileService.removeById(id)),
     );
     await this.productRepository.delete(id);
     return {
