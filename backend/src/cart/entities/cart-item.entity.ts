@@ -20,14 +20,14 @@ export class CartItem {
     onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'cartId' })
-  cartId: Cart;
+  cartId?: Cart;
 
   @ManyToOne(() => Product, (prod) => prod.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'productId' })
-  productId: Product;
+  productId?: Product;
 
   @Column()
   quantity: number;

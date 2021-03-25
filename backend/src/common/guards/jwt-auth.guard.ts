@@ -13,6 +13,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
+    console.log(user);
     if (user) return user;
     if (isPublic) return true;
     throw new UnauthorizedException('Not authenticated');

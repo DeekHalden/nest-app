@@ -53,11 +53,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  public async login(
-    @Body() loginUserDto: LoginUserDto,
-    @Session() session: Record<string, any>,
-  ): Promise<LoginStatus> {
-    console.log(session);
+  public async login(@Body() loginUserDto: LoginUserDto): Promise<LoginStatus> {
     return await this.authService.login(loginUserDto);
   }
 
